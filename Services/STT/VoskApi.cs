@@ -11,14 +11,17 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
         
         public event EventHandler<VoskResultEventArgs> OnFinnalResult;
         public event EventHandler<VoskResultEventArgs> OnResult;
-        Model model;
+        private Model model;
+
+        public Model Model { get => model; set => model = value; }
+
         public void Test()
         {
 
             // You can set to -1 to disable logging messages
             Vosk.Vosk.SetLogLevel(0);
 
-            model = new Model("vosk-model-cn-0.1");
+            Model = new Model("vosk-model-cn-0.1");
             StartTask("test.wav");
             //DemoFloats(model);
             //DemoSpeaker(model);
@@ -26,37 +29,31 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
 
         public void StartTask(string fullName)
         {
-            using (Stream source = File.OpenRead(fullName))
-            {
-                using (var wav = new WaveFileReader(source))
-                {
-                    using (var rec = new VoskRecognizer(model, (float)wav.WaveFormat.SampleRate))
-                    {
-                        rec.SetMaxAlternatives(0);
-                        rec.SetWords(true);
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = wav.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            if (rec.AcceptWaveform(buffer, bytesRead))
-                            {
-                                OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
-                            }
-                            else
-                            {
-                                OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
-                            }
-                        }
-                        OnFinnalResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
-                    }
+            using Stream source = File.OpenRead(fullName);
+            using var wav = new WaveFileReader(source);
 
+            using var rec = new VoskRecognizer(Model, (float)wav.WaveFormat.SampleRate);
+            rec.SetMaxAlternatives(0);
+            rec.SetWords(true);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = wav.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                if (rec.AcceptWaveform(buffer, bytesRead))
+                {
+                    OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
+                }
+                else
+                {
+                    OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
                 }
             }
+            OnFinnalResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
         }
         public void DemoFloats(Model model)
         {
             // Demo float array
-            VoskRecognizer rec = new VoskRecognizer(model, 16000.0f);
+            var rec = new VoskRecognizer(model, 16000.0f);
             using (Stream source = File.OpenRead("test.wav"))
             {
                 byte[] buffer = new byte[4096];
@@ -84,8 +81,8 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
         public void DemoSpeaker(Model model)
         {
             // Output speakers
-            SpkModel spkModel = new SpkModel("model-spk");
-            VoskRecognizer rec = new VoskRecognizer(model, 16000.0f);
+            var spkModel = new SpkModel("model-spk");
+            var rec = new VoskRecognizer(model, 16000.0f);
             rec.SetSpkModel(spkModel);
 
             using (Stream source = File.OpenRead("test.wav"))
