@@ -47,6 +47,10 @@ namespace Project.STT.SGT.Tool._2111
             this.LstTranslateTimeEnd = new System.Windows.Forms.ColumnHeader();
             this.LstTranslateConfidence = new System.Windows.Forms.ColumnHeader();
             this.LstTranslateResult = new System.Windows.Forms.ColumnHeader();
+            this.LstTranslateWordCount = new System.Windows.Forms.ColumnHeader();
+            this.BtnExportText = new System.Windows.Forms.Button();
+            this.BtnExportResult = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             this.StatusMain.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -90,13 +94,16 @@ namespace Project.STT.SGT.Tool._2111
             this.panel1.Controls.Add(this.TxtModelSelect);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.TxtTemp);
+            this.panel1.Controls.Add(this.BtnExportResult);
+            this.panel1.Controls.Add(this.BtnExportText);
             this.panel1.Controls.Add(this.BtnStartTask);
             this.panel1.Controls.Add(this.BtnLoad);
             this.panel1.Controls.Add(this.TxtMediaSrc);
+            this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1083, 318);
+            this.panel1.Size = new System.Drawing.Size(1083, 360);
             this.panel1.TabIndex = 1;
             // 
             // BtnModelSelect
@@ -119,17 +126,16 @@ namespace Project.STT.SGT.Tool._2111
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.label2.Location = new System.Drawing.Point(13, 13);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(120, 26);
+            this.label2.Size = new System.Drawing.Size(118, 24);
             this.label2.TabIndex = 4;
             this.label2.Text = "选择训练模型";
             // 
             // TxtTemp
             // 
             this.TxtTemp.AllowDrop = true;
-            this.TxtTemp.Location = new System.Drawing.Point(13, 117);
+            this.TxtTemp.Location = new System.Drawing.Point(12, 171);
             this.TxtTemp.Multiline = true;
             this.TxtTemp.Name = "TxtTemp";
             this.TxtTemp.Size = new System.Drawing.Size(1046, 189);
@@ -140,9 +146,9 @@ namespace Project.STT.SGT.Tool._2111
             // BtnStartTask
             // 
             this.BtnStartTask.Enabled = false;
-            this.BtnStartTask.Location = new System.Drawing.Point(837, 82);
+            this.BtnStartTask.Location = new System.Drawing.Point(13, 85);
             this.BtnStartTask.Name = "BtnStartTask";
-            this.BtnStartTask.Size = new System.Drawing.Size(163, 30);
+            this.BtnStartTask.Size = new System.Drawing.Size(163, 80);
             this.BtnStartTask.TabIndex = 2;
             this.BtnStartTask.Text = "开始语音转文字";
             this.BtnStartTask.UseVisualStyleBackColor = true;
@@ -150,7 +156,7 @@ namespace Project.STT.SGT.Tool._2111
             // 
             // BtnLoad
             // 
-            this.BtnLoad.Location = new System.Drawing.Point(735, 82);
+            this.BtnLoad.Location = new System.Drawing.Point(735, 52);
             this.BtnLoad.Name = "BtnLoad";
             this.BtnLoad.Size = new System.Drawing.Size(96, 30);
             this.BtnLoad.TabIndex = 2;
@@ -160,7 +166,7 @@ namespace Project.STT.SGT.Tool._2111
             // 
             // TxtMediaSrc
             // 
-            this.TxtMediaSrc.Location = new System.Drawing.Point(146, 80);
+            this.TxtMediaSrc.Location = new System.Drawing.Point(148, 49);
             this.TxtMediaSrc.Name = "TxtMediaSrc";
             this.TxtMediaSrc.Size = new System.Drawing.Size(582, 30);
             this.TxtMediaSrc.TabIndex = 1;
@@ -168,10 +174,9 @@ namespace Project.STT.SGT.Tool._2111
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.label1.Location = new System.Drawing.Point(11, 80);
+            this.label1.Location = new System.Drawing.Point(13, 52);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(120, 26);
+            this.label1.Size = new System.Drawing.Size(118, 24);
             this.label1.TabIndex = 0;
             this.label1.Text = "选择音频文件";
             // 
@@ -183,12 +188,13 @@ namespace Project.STT.SGT.Tool._2111
             this.LstTranslate.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.LstTranslateTimeStart,
             this.LstTranslateTimeEnd,
+            this.LstTranslateWordCount,
             this.LstTranslateConfidence,
             this.LstTranslateResult});
             this.LstTranslate.HideSelection = false;
-            this.LstTranslate.Location = new System.Drawing.Point(0, 312);
+            this.LstTranslate.Location = new System.Drawing.Point(0, 366);
             this.LstTranslate.Name = "LstTranslate";
-            this.LstTranslate.Size = new System.Drawing.Size(1082, 711);
+            this.LstTranslate.Size = new System.Drawing.Size(1082, 657);
             this.LstTranslate.TabIndex = 2;
             this.LstTranslate.UseCompatibleStateImageBehavior = false;
             this.LstTranslate.View = System.Windows.Forms.View.Details;
@@ -212,6 +218,42 @@ namespace Project.STT.SGT.Tool._2111
             // 
             this.LstTranslateResult.Text = "转文字结果";
             this.LstTranslateResult.Width = 600;
+            // 
+            // LstTranslateWordCount
+            // 
+            this.LstTranslateWordCount.Text = "词数";
+            // 
+            // BtnExportText
+            // 
+            this.BtnExportText.Enabled = false;
+            this.BtnExportText.Location = new System.Drawing.Point(182, 85);
+            this.BtnExportText.Name = "BtnExportText";
+            this.BtnExportText.Size = new System.Drawing.Size(163, 38);
+            this.BtnExportText.TabIndex = 2;
+            this.BtnExportText.Text = "导出文本";
+            this.BtnExportText.UseVisualStyleBackColor = true;
+            this.BtnExportText.Click += new System.EventHandler(this.BtnStartTask_Click);
+            // 
+            // BtnExportResult
+            // 
+            this.BtnExportResult.Enabled = false;
+            this.BtnExportResult.Location = new System.Drawing.Point(182, 129);
+            this.BtnExportResult.Name = "BtnExportResult";
+            this.BtnExportResult.Size = new System.Drawing.Size(163, 38);
+            this.BtnExportResult.TabIndex = 2;
+            this.BtnExportResult.Text = "导出结果";
+            this.BtnExportResult.UseVisualStyleBackColor = true;
+            this.BtnExportResult.Click += new System.EventHandler(this.BtnStartTask_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoEllipsis = true;
+            this.label3.Location = new System.Drawing.Point(351, 92);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(707, 73);
+            this.label3.TabIndex = 0;
+            this.label3.Text = "此工具是基于Vosk-api实现的离线语音识别样例体验版，正式版需服务器部署，如需，请联系作者(serfend@foxmail.com)。使用前需确认ffmpeg" +
+    ".exe、ffprobe.exe是否已放到工具所在目录。开启程序后加载语音训练模型和媒体文件后可开始识别。";
             // 
             // FrmMain
             // 
@@ -252,5 +294,9 @@ namespace Project.STT.SGT.Tool._2111
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolStripStatusLabel StatusMainLog;
         private System.Windows.Forms.Button BtnStartTask;
+        private System.Windows.Forms.ColumnHeader LstTranslateWordCount;
+        private System.Windows.Forms.Button BtnExportResult;
+        private System.Windows.Forms.Button BtnExportText;
+        private System.Windows.Forms.Label label3;
     }
 }
