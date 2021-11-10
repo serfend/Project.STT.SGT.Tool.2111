@@ -9,6 +9,11 @@ using System.Configuration;
 using System.Collections.Specialized;
 using Project.STT.SGT.Tool._2111.Services.Configuration;
 using Project.STT.SGT.Tool._2111.Views.App.Main;
+using System.IO;
+using System.Text;
+using Project.STT.SGT.Tool._2111.Services.STT.VoskApiResult;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Project.STT.SGT.Tool._2111
 {
@@ -23,11 +28,11 @@ namespace Project.STT.SGT.Tool._2111
             m_SyncContext = SynchronizationContext.Current;
             InitializeComponent();
             this.logger = new TooltipLabelLogger(this.StatusMainLog);
-            this.config = new ("FrmMain.Setting.json");
+            this.config = new("FrmMain.Setting.json");
             this.Load += FrmMain_Load;
         }
         private readonly TooltipLabelLogger logger;
-        private JsonConfiguration<FrmMainSetting> config { get;  set; }
+        private JsonConfiguration<FrmMainSetting> config { get; set; }
 
         private void FrmMain_Load(object sender, EventArgs e)
         {
@@ -56,5 +61,45 @@ namespace Project.STT.SGT.Tool._2111
             this.FormClosing += (sender, e) => config.Save();
         }
 
+        private void BtnExportText_Click(object sender, EventArgs e)
+        {
+            var title = (sender as Button).Text;
+            DoExportResult(title, () =>
+            {
+                var list = new List<VoskSingleWordResult>();
+                foreach (var obj in this.LstTranslate.Items)
+                {
+                    var item = obj as ListViewItem;
+                    list.Add(new VoskSingleWordResult() { });
+                }
+                var result = new { Meida = v.MediaMeta, Result = list,Export = new { Time = DateTime.Now } };
+                return JsonSerializer.Serialize(result);
+            });
+        }
+        private void DoExportResult(string title, Func<string> ResultGetter)
+        {
+            logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"开始{title}");
+            var dialog = new SaveFileDialog() { Title = title };
+            var result = dialog.ShowDialog(this);
+            if (result != DialogResult.OK && result != DialogResult.Yes) return;
+            var content = ResultGetter();
+            File.WriteAllText(dialog.FileName, content.ToString());
+            logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"完成{title}");
+        }
+
+        private void BtnExportText_Click_1(object sender, EventArgs e)
+        {
+            var title = (sender as Button).Text;
+            DoExportResult(title, () =>
+            {
+                var content = new StringBuilder();
+                foreach (var obj in this.LstTranslate.Items)
+                {
+                    var item = obj as ListViewItem;
+                    content.AppendLine(item.SubItems[4].Text);
+                }
+                return content.ToString();
+            });
+        }
     }
 }

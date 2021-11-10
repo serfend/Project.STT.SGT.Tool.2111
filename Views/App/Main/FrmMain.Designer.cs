@@ -38,19 +38,19 @@ namespace Project.STT.SGT.Tool._2111
             this.TxtModelSelect = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.TxtTemp = new System.Windows.Forms.TextBox();
+            this.BtnExportResult = new System.Windows.Forms.Button();
+            this.BtnExportText = new System.Windows.Forms.Button();
             this.BtnStartTask = new System.Windows.Forms.Button();
             this.BtnLoad = new System.Windows.Forms.Button();
             this.TxtMediaSrc = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.LstTranslate = new System.Windows.Forms.ListView();
             this.LstTranslateTimeStart = new System.Windows.Forms.ColumnHeader();
             this.LstTranslateTimeEnd = new System.Windows.Forms.ColumnHeader();
+            this.LstTranslateWordCount = new System.Windows.Forms.ColumnHeader();
             this.LstTranslateConfidence = new System.Windows.Forms.ColumnHeader();
             this.LstTranslateResult = new System.Windows.Forms.ColumnHeader();
-            this.LstTranslateWordCount = new System.Windows.Forms.ColumnHeader();
-            this.BtnExportText = new System.Windows.Forms.Button();
-            this.BtnExportResult = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
             this.StatusMain.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -143,6 +143,26 @@ namespace Project.STT.SGT.Tool._2111
             this.TxtTemp.Text = "点击开始说话...（暂不支持语音输入）";
             this.TxtTemp.Click += new System.EventHandler(this.TextTemp_Click);
             // 
+            // BtnExportResult
+            // 
+            this.BtnExportResult.Location = new System.Drawing.Point(182, 129);
+            this.BtnExportResult.Name = "BtnExportResult";
+            this.BtnExportResult.Size = new System.Drawing.Size(163, 38);
+            this.BtnExportResult.TabIndex = 2;
+            this.BtnExportResult.Text = "导出结果";
+            this.BtnExportResult.UseVisualStyleBackColor = true;
+            this.BtnExportResult.Click += new System.EventHandler(this.BtnExportText_Click);
+            // 
+            // BtnExportText
+            // 
+            this.BtnExportText.Location = new System.Drawing.Point(182, 85);
+            this.BtnExportText.Name = "BtnExportText";
+            this.BtnExportText.Size = new System.Drawing.Size(163, 38);
+            this.BtnExportText.TabIndex = 2;
+            this.BtnExportText.Text = "导出文本";
+            this.BtnExportText.UseVisualStyleBackColor = true;
+            this.BtnExportText.Click += new System.EventHandler(this.BtnExportText_Click_1);
+            // 
             // BtnStartTask
             // 
             this.BtnStartTask.Enabled = false;
@@ -170,6 +190,16 @@ namespace Project.STT.SGT.Tool._2111
             this.TxtMediaSrc.Name = "TxtMediaSrc";
             this.TxtMediaSrc.Size = new System.Drawing.Size(582, 30);
             this.TxtMediaSrc.TabIndex = 1;
+            // 
+            // label3
+            // 
+            this.label3.AutoEllipsis = true;
+            this.label3.Location = new System.Drawing.Point(351, 92);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(707, 73);
+            this.label3.TabIndex = 0;
+            this.label3.Text = "此工具是基于Vosk-api实现的离线语音识别样例体验版，正式版需服务器部署，如需，请联系作者(serfend@foxmail.com)。使用前需确认ffmpeg" +
+    ".exe、ffprobe.exe是否已放到工具所在目录。开启程序后加载语音训练模型和媒体文件后可开始识别。";
             // 
             // label1
             // 
@@ -209,6 +239,10 @@ namespace Project.STT.SGT.Tool._2111
             this.LstTranslateTimeEnd.Text = "结束时间";
             this.LstTranslateTimeEnd.Width = 120;
             // 
+            // LstTranslateWordCount
+            // 
+            this.LstTranslateWordCount.Text = "词数";
+            // 
             // LstTranslateConfidence
             // 
             this.LstTranslateConfidence.Text = "置信度";
@@ -218,42 +252,6 @@ namespace Project.STT.SGT.Tool._2111
             // 
             this.LstTranslateResult.Text = "转文字结果";
             this.LstTranslateResult.Width = 600;
-            // 
-            // LstTranslateWordCount
-            // 
-            this.LstTranslateWordCount.Text = "词数";
-            // 
-            // BtnExportText
-            // 
-            this.BtnExportText.Enabled = false;
-            this.BtnExportText.Location = new System.Drawing.Point(182, 85);
-            this.BtnExportText.Name = "BtnExportText";
-            this.BtnExportText.Size = new System.Drawing.Size(163, 38);
-            this.BtnExportText.TabIndex = 2;
-            this.BtnExportText.Text = "导出文本";
-            this.BtnExportText.UseVisualStyleBackColor = true;
-            this.BtnExportText.Click += new System.EventHandler(this.BtnStartTask_Click);
-            // 
-            // BtnExportResult
-            // 
-            this.BtnExportResult.Enabled = false;
-            this.BtnExportResult.Location = new System.Drawing.Point(182, 129);
-            this.BtnExportResult.Name = "BtnExportResult";
-            this.BtnExportResult.Size = new System.Drawing.Size(163, 38);
-            this.BtnExportResult.TabIndex = 2;
-            this.BtnExportResult.Text = "导出结果";
-            this.BtnExportResult.UseVisualStyleBackColor = true;
-            this.BtnExportResult.Click += new System.EventHandler(this.BtnStartTask_Click);
-            // 
-            // label3
-            // 
-            this.label3.AutoEllipsis = true;
-            this.label3.Location = new System.Drawing.Point(351, 92);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(707, 73);
-            this.label3.TabIndex = 0;
-            this.label3.Text = "此工具是基于Vosk-api实现的离线语音识别样例体验版，正式版需服务器部署，如需，请联系作者(serfend@foxmail.com)。使用前需确认ffmpeg" +
-    ".exe、ffprobe.exe是否已放到工具所在目录。开启程序后加载语音训练模型和媒体文件后可开始识别。";
             // 
             // FrmMain
             // 
