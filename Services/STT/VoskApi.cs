@@ -1,6 +1,8 @@
 ﻿using FFMpegCore;
+using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
 using NAudio.Wave;
+using Project.STT.SGT.Tool._2111.Services.STT.VoskApiResult;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -14,7 +16,7 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
     public class VoskApi
     {
 
-        public event EventHandler<VoskResultEventArgs> OnFinnalResult;
+        public event EventHandler<VoskFinnalResultEventArgs> OnFinnalResult;
         public event EventHandler<VoskResultEventArgs> OnResult;
         public event EventHandler<VoskMediaLoadedEventArgs> OnMediaLoaded;
         private Model model;
@@ -48,6 +50,7 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
                      opt
                      .WithAudioSamplingRate((int)MySampleRate)
                      .UsingMultithreading(true)
+                     .WithCustomArgument("-ac 1")
                      .WithAudioCodec("pcm_s16le")
                      .ForceFormat("wav")
                 )
@@ -66,6 +69,7 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
 
         }
         public Task StartTask() => StartTask(CancellationToken.None);
+        private VoskResultEventArgs lastEvent;
         public Task StartTask(CancellationToken token)
         {
             if (MediaMeta == null) throw new ArgumentNullException(nameof(MediaMeta));
@@ -86,16 +90,16 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
                         IsRunning = false;
                         return;
                     }
-                    if (rec.AcceptWaveform(buffer, bytesRead))
+                    var accepted = rec.AcceptWaveform(buffer, bytesRead);
+                    var e = new VoskResultEventArgs(rec.PartialResult(), !accepted);
+                    if (accepted) OnFinnalResult?.Invoke(this, new VoskFinnalResultEventArgs(rec.FinalResult()));
+                    if (lastEvent == null || e.Data.Partial != lastEvent.Data.Partial)
                     {
-                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
-                    }
-                    else
-                    {
-                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
+                        lastEvent = e;
+                        OnResult?.Invoke(this, e);
                     }
                 }
-                OnFinnalResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
+
                 IsRunning = false;
             }, token);
             task.Start();

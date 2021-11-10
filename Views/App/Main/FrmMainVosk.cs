@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Project.STT.SGT.Tool._2111
 {
@@ -24,31 +25,28 @@ namespace Project.STT.SGT.Tool._2111
             v = new VoskApi();
             v.OnResult += (sender, e) =>
             {
-                var partialResult = JsonSerializer.Deserialize<VoskPartialResult>(e.Message);
                 m_SyncContext.Post(d =>
                 {
                     this.TxtTemp.Text = d as string;
-                }, partialResult.Partial);
-                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"更新识别结果:{partialResult.Partial}");
+                }, e.Data.Partial);
+                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"更新识别结果:{e.Data.Partial}");
 
-                //var data = new string[] {
-                //    DateTime.Now.ToString(),
-                //    "",
-                //    "",
-                //    e.Message
-                //};
-                //m_SyncContext.Post((d) =>
-                //{
-                //    this.LstTranslate.Items.Insert(0, new ListViewItem(d as string[]));
-                //}, data);
             };
-            v.OnFinnalResult += (sender, e) =>
+            v.OnFinnalResult += (sender, events) =>
             {
-                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), "完成任务");
-                m_SyncContext.Post(d =>
+                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), "本句话完成");
+                m_SyncContext.Post(obj =>
                 {
-                    BtnStartTask.Text = TranslationStatusStart;
-                }, null);
+                    var e = obj as VoskFinnalResultEventArgs;
+                    var data = new string[] {
+                        Math.Round(e.Start,3).ToString(),
+                        Math.Round(e.End,3).ToString(),
+                        e.TotalWords.ToString(),
+                        Math.Round(e.Confidence,3).ToString(),
+                        e.Content
+                    };
+                    this.LstTranslate.Items.Insert(0, new ListViewItem(data as string[]));
+                }, events);
             };
             v.OnMediaLoaded += (sender, e) =>
             {
