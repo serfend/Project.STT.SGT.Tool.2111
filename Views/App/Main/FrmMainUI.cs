@@ -27,7 +27,7 @@ namespace Project.STT.SGT.Tool._2111
         {
             var fileMatch = File.Exists(this.TxtMediaSrc.Text);
             var modelMatch = Directory.Exists(this.TxtModelSelect.Text);
-            var canStartTask = fileMatch && modelMatch;
+            var canStartTask = fileMatch && modelMatch && !v.IsRunning;
             BtnStartTask.Enabled = canStartTask;
             BtnStartTask.Text = canStartTask ? TranslationStatusStart : TranslationNotAllowed;
         }
@@ -43,7 +43,7 @@ namespace Project.STT.SGT.Tool._2111
             this.TxtModelSelect.Text = wavFileDialog.SelectedPath;
 
         }
-        private CancellationToken translateTaskCancel;
+        private CancellationTokenSource translateTaskCancel;
         const string TranslationStatusStart = "开始语音转文字";
         const string TranslationStatusEnd = "停止语音转文字";
         const string TranslationNotAllowed = "请选择有效的模型和音频文件";
@@ -53,16 +53,16 @@ namespace Project.STT.SGT.Tool._2111
             if (btn.Text == TranslationStatusStart)
             {
                 btn.Text = TranslationStatusEnd;
-                translateTaskCancel = new CancellationToken();
+                translateTaskCancel = new CancellationTokenSource();
                 logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), "开始转换");
-                v.StartTask(translateTaskCancel).ContinueWith((d) =>
+                v.StartTask(translateTaskCancel.Token).ContinueWith((d) =>
                 {
                     Console.WriteLine("1");
                 });
                 return;
             }
+            translateTaskCancel.Cancel();
             btn.Text = TranslationStatusStart;
-            translateTaskCancel.ThrowIfCancellationRequested();
             logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), "等待开始语音识别");
         }
         private void BtnLoad_Click(object sender, EventArgs e)

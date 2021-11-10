@@ -1,5 +1,8 @@
-﻿using NAudio.Wave;
+﻿using FFMpegCore;
+using FFMpegCore.Pipes;
+using NAudio.Wave;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -15,7 +18,13 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
         public event EventHandler<VoskResultEventArgs> OnResult;
         public event EventHandler<VoskMediaLoadedEventArgs> OnMediaLoaded;
         private Model model;
+        static VoskApi()
+        {
+            GlobalFFOptions.Configure(d =>
+            {
 
+            });
+        }
         public Model Model { get => model; set => model = value; }
         public void LoadModel(string path)
         {
@@ -24,35 +33,53 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
             Model = new Model(path);
         }
         public bool IsRunning { get; private set; }
-        public WaveFileReader WaveFile { get => waveFile; private set => waveFile = value; }
-
-        private WaveFileReader waveFile;
-        private Stream source;
+        public IMediaAnalysis MediaMeta { get; set; }
+        private MemoryStream waveStream = null;
+        private const float MySampleRate = 16000;
         public void LoadAudio(string fileName)
         {
-            source = File.OpenRead(fileName);
-            if (WaveFile != null)
-            {
-                WaveFile.Dispose();
-            }
-            WaveFile = new WaveFileReader(source);
-            OnMediaLoaded?.Invoke(this, new VoskMediaLoadedEventArgs(WaveFile));
+            if (!File.Exists(fileName)) return;
+            MediaMeta = FFProbe.Analyse(fileName);
+            IsRunning = true;
+            waveStream = new MemoryStream();
+            FFMpegArguments
+                .FromFileInput(fileName)
+                .OutputToPipe(new StreamPipeSink(waveStream), opt =>
+                     opt
+                     .WithAudioSamplingRate((int)MySampleRate)
+                     .UsingMultithreading(true)
+                     .WithAudioCodec("pcm_s16le")
+                     .ForceFormat("wav")
+                )
+                .NotifyOnProgress(c =>
+                {
+                    IsRunning = false;
+                    Debug.Print(c.ToString());
+                    var file = new FileInfo("temp_convert.wav");
+                    if (file.Exists) { }
+                    waveStream.Position = 0;
+                    using var fs = file.Create();
+                    waveStream.CopyTo(fs);
+                    OnMediaLoaded?.Invoke(this, new VoskMediaLoadedEventArgs(MediaMeta));
+                })
+                .ProcessAsynchronously(false);
+
         }
         public Task StartTask() => StartTask(CancellationToken.None);
         public Task StartTask(CancellationToken token)
         {
-            if (WaveFile == null) throw new ArgumentNullException(nameof(WaveFile));
+            if (MediaMeta == null) throw new ArgumentNullException(nameof(MediaMeta));
             if (IsRunning) return Task.CompletedTask;
             IsRunning = true;
             var task = new Task(() =>
             {
                 byte[] buffer = new byte[4096];
                 int bytesRead;
-                using var rec = new VoskRecognizer(Model, (float)WaveFile.WaveFormat.SampleRate);
+                using var rec = new VoskRecognizer(Model, MySampleRate);
                 rec.SetMaxAlternatives(0);
                 rec.SetWords(true);
-                WaveFile.Seek(0, SeekOrigin.Begin);
-                while ((bytesRead = WaveFile.Read(buffer, 0, buffer.Length)) > 0)
+                waveStream.Seek(0, SeekOrigin.Begin);
+                while ((bytesRead = waveStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     if (token.IsCancellationRequested)
                     {

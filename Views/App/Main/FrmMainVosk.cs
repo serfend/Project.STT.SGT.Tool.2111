@@ -1,4 +1,5 @@
 ﻿using NLog;
+using Project.STT.SGT.Tool._2111.Extensions.FFMPEG;
 using Project.STT.SGT.Tool._2111.Extensions.NAudio;
 using Project.STT.SGT.Tool._2111.Services.STT;
 using Project.STT.SGT.Tool._2111.Services.STT.VoskApiResult;
@@ -44,11 +45,18 @@ namespace Project.STT.SGT.Tool._2111
             v.OnFinnalResult += (sender, e) =>
             {
                 logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), "完成任务");
-                BtnStartTask.Text = TranslationStatusStart;
+                m_SyncContext.Post(d =>
+                {
+                    BtnStartTask.Text = TranslationStatusStart;
+                }, null);
             };
             v.OnMediaLoaded += (sender, e) =>
             {
-                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"音频已加载:{e.Wave.ToSummary()}");
+                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"音频已加载:{e.Wave?.AudioToSummary()}");
+                m_SyncContext.Post(d =>
+                {
+                    CheckCanStartTask();
+                }, null);
             };
         }
 
