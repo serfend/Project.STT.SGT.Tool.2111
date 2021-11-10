@@ -2,6 +2,7 @@
 using FFMpegCore.Enums;
 using FFMpegCore.Pipes;
 using NAudio.Wave;
+using NLog;
 using Project.STT.SGT.Tool._2111.Services.STT.VoskApiResult;
 using System;
 using System.Diagnostics;
@@ -15,11 +16,19 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
 {
     public class VoskApi
     {
+        private Logger logger;
 
         public event EventHandler<VoskFinnalResultEventArgs> OnFinnalResult;
         public event EventHandler<VoskResultEventArgs> OnResult;
         public event EventHandler<VoskMediaLoadedEventArgs> OnMediaLoaded;
+        public event EventHandler OnModelLoaded;
+
+
         private Model model;
+        public VoskApi()
+        {
+            logger = LogManager.GetCurrentClassLogger();
+        }
         static VoskApi()
         {
             GlobalFFOptions.Configure(d =>
@@ -27,15 +36,35 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
 
             });
         }
+        private VoskRecognizer rec;
         public Model Model { get => model; set => model = value; }
         public void LoadModel(string path)
         {
             if (!Directory.Exists(path)) return;
             if (null != Model) Model.Dispose();
             Model = new Model(path);
+            int tryTime = 0;
+            while (tryTime++ < 10)
+            {
+                try
+                {
+                    Rec = new VoskRecognizer(Model, MySampleRate);
+                }
+                catch (Exception e)
+                {
+                    logger.Warn($"加载模型失败:{e.Message}");
+                }
+                if (Rec != null) break;
+                Thread.Sleep((int)5e3);
+            }
+            if (tryTime > 10)
+                logger.Error($"模型多次加载失败，已放弃。");
+            OnModelLoaded?.Invoke(this, new EventArgs());
         }
         public bool IsRunning { get; private set; }
         public IMediaAnalysis MediaMeta { get; set; }
+        public VoskRecognizer Rec { get => rec; set => rec = value; }
+
         private MemoryStream waveStream = null;
         private const float MySampleRate = 16000;
         public void LoadAudio(string fileName)
@@ -79,9 +108,8 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
             {
                 byte[] buffer = new byte[4096];
                 int bytesRead;
-                using var rec = new VoskRecognizer(Model, MySampleRate);
-                rec.SetMaxAlternatives(0);
-                rec.SetWords(true);
+                Rec.SetMaxAlternatives(0);
+                Rec.SetWords(true);
                 waveStream.Seek(0, SeekOrigin.Begin);
                 while ((bytesRead = waveStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
@@ -90,73 +118,21 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
                         IsRunning = false;
                         return;
                     }
-                    var accepted = rec.AcceptWaveform(buffer, bytesRead);
-                    var e = new VoskResultEventArgs(rec.PartialResult(), !accepted);
-                    if (accepted) OnFinnalResult?.Invoke(this, new VoskFinnalResultEventArgs(rec.FinalResult()));
+                    var accepted = Rec.AcceptWaveform(buffer, bytesRead);
+                    var e = new VoskResultEventArgs(Rec.PartialResult(), !accepted);
+                    if (accepted) OnFinnalResult?.Invoke(this, new VoskFinnalResultEventArgs(Rec.FinalResult(), false));
                     if (lastEvent == null || e.Data.Partial != lastEvent.Data.Partial)
                     {
                         lastEvent = e;
                         OnResult?.Invoke(this, e);
                     }
                 }
-
+                OnFinnalResult?.Invoke(this, new VoskFinnalResultEventArgs(Rec.FinalResult(), true));
                 IsRunning = false;
             }, token);
             task.Start();
             return task;
         }
-        public void DemoFloats(Model model)
-        {
-            // Demo float array
-            var rec = new VoskRecognizer(model, 16000.0f);
-            using (Stream source = File.OpenRead("test.wav"))
-            {
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    float[] fbuffer = new float[bytesRead / 2];
-                    for (int i = 0, n = 0; i < fbuffer.Length; i++, n += 2)
-                    {
-                        fbuffer[i] = (short)(buffer[n] | buffer[n + 1] << 8);
-                    }
-                    if (rec.AcceptWaveform(fbuffer, fbuffer.Length))
-                    {
-                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
-                    }
-                    else
-                    {
-                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
-                    }
-                }
-            }
-            OnResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
-        }
 
-        public void DemoSpeaker(Model model)
-        {
-            // Output speakers
-            var spkModel = new SpkModel("model-spk");
-            var rec = new VoskRecognizer(model, 16000.0f);
-            rec.SetSpkModel(spkModel);
-
-            using (Stream source = File.OpenRead("test.wav"))
-            {
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    if (rec.AcceptWaveform(buffer, bytesRead))
-                    {
-                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
-                    }
-                    else
-                    {
-                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
-                    }
-                }
-            }
-            OnResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
-        }
     }
 }
