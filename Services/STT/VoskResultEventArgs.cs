@@ -21,8 +21,9 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
     }
     public class VoskFinnalResultEventArgs : EventArgs, IVoskSingleWordResult
     {
-        public VoskFinnalResultEventArgs(string message)
+        public VoskFinnalResultEventArgs(string message,bool isCompleted)
         {
+            this.IsCompleted = isCompleted;
             Data = JsonSerializer.Deserialize<VoskSingleLineResult>(message);
             Content = Data.Text;
             Caculate();
@@ -46,5 +47,9 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
         public double Confidence { get ;set; }
         public double Start { get; set; }
         public double End { get ;set; }
+        /// <summary>
+        /// 是否已完成
+        /// </summary>
+        public bool IsCompleted { get; set; }
     }
 }

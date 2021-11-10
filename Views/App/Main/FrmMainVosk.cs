@@ -45,12 +45,24 @@ namespace Project.STT.SGT.Tool._2111
                         Math.Round(e.Confidence,3).ToString(),
                         e.Content
                     };
+                    if (e.IsCompleted) BtnStartTask.PerformClick();
+                    this.StatusMainProcess.Value = e.IsCompleted ? this.StatusMainProcess.Maximum : (int)e.End;
                     this.LstTranslate.Items.Insert(0, new ListViewItem(data as string[]));
                 }, events);
             };
             v.OnMediaLoaded += (sender, e) =>
             {
                 logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"音频已加载:{e.Wave?.AudioToSummary()}");
+                m_SyncContext.Post(d =>
+                {
+                    var data = d as VoskMediaLoadedEventArgs;
+                    this.StatusMainProcess.Maximum = (int)data.Wave.Duration.TotalSeconds;
+                    CheckCanStartTask();
+                }, e);
+            };
+            v.OnModelLoaded += (sender, e) =>
+            {
+                logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"模型已加载完成");
                 m_SyncContext.Post(d =>
                 {
                     CheckCanStartTask();

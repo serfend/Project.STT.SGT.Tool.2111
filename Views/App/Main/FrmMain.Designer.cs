@@ -149,7 +149,7 @@ namespace Project.STT.SGT.Tool._2111
             this.BtnExportResult.Name = "BtnExportResult";
             this.BtnExportResult.Size = new System.Drawing.Size(163, 38);
             this.BtnExportResult.TabIndex = 2;
-            this.BtnExportResult.Text = "导出结果";
+            this.BtnExportResult.Text = "导出结果(json)";
             this.BtnExportResult.UseVisualStyleBackColor = true;
             this.BtnExportResult.Click += new System.EventHandler(this.BtnExportText_Click);
             // 
@@ -159,7 +159,7 @@ namespace Project.STT.SGT.Tool._2111
             this.BtnExportText.Name = "BtnExportText";
             this.BtnExportText.Size = new System.Drawing.Size(163, 38);
             this.BtnExportText.TabIndex = 2;
-            this.BtnExportText.Text = "导出文本";
+            this.BtnExportText.Text = "导出文本(txt)";
             this.BtnExportText.UseVisualStyleBackColor = true;
             this.BtnExportText.Click += new System.EventHandler(this.BtnExportText_Click_1);
             // 

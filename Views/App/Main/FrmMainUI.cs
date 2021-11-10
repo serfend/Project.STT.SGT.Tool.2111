@@ -27,7 +27,7 @@ namespace Project.STT.SGT.Tool._2111
         {
             var fileMatch = File.Exists(this.TxtMediaSrc.Text);
             var modelMatch = Directory.Exists(this.TxtModelSelect.Text);
-            var canStartTask = fileMatch && modelMatch && !v.IsRunning;
+            var canStartTask = fileMatch && modelMatch && !v.IsRunning && v.Rec != null;
             BtnStartTask.Enabled = canStartTask;
             BtnStartTask.Text = canStartTask ? TranslationStatusStart : TranslationNotAllowed;
         }
@@ -52,6 +52,7 @@ namespace Project.STT.SGT.Tool._2111
             var btn = sender as Button;
             if (btn.Text == TranslationStatusStart)
             {
+                LstTranslate.Items.Clear(); // 开始时清空上次结果
                 btn.Text = TranslationStatusEnd;
                 translateTaskCancel = new CancellationTokenSource();
                 logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), "开始转换");
