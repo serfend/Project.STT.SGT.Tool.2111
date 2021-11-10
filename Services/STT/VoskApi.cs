@@ -38,22 +38,23 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
             WaveFile = new WaveFileReader(source);
             OnMediaLoaded?.Invoke(this, new VoskMediaLoadedEventArgs(WaveFile));
         }
-        public Task StartTask(CancellationToken? token = null)
+        public Task StartTask() => StartTask(CancellationToken.None);
+        public Task StartTask(CancellationToken token)
         {
             if (WaveFile == null) throw new ArgumentNullException(nameof(WaveFile));
             if (IsRunning) return Task.CompletedTask;
             IsRunning = true;
-            using var rec = new VoskRecognizer(Model, (float)WaveFile.WaveFormat.SampleRate);
-            rec.SetMaxAlternatives(0);
-            rec.SetWords(true);
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            var cancelToken = token ?? CancellationToken.None;
             var task = new Task(() =>
             {
-                while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                using var rec = new VoskRecognizer(Model, (float)WaveFile.WaveFormat.SampleRate);
+                rec.SetMaxAlternatives(0);
+                rec.SetWords(true);
+                WaveFile.Seek(0, SeekOrigin.Begin);
+                while ((bytesRead = WaveFile.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    if (cancelToken.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         IsRunning = false;
                         return;
@@ -69,7 +70,7 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
                 }
                 OnFinnalResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
                 IsRunning = false;
-            }, cancelToken);
+            }, token);
             task.Start();
             return task;
         }
