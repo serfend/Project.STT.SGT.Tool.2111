@@ -2,53 +2,76 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Vosk;
 
 namespace Project.STT.SGT.Tool._2111.Services.STT
 {
     public class VoskApi
     {
-        
+
         public event EventHandler<VoskResultEventArgs> OnFinnalResult;
         public event EventHandler<VoskResultEventArgs> OnResult;
+        public event EventHandler<VoskMediaLoadedEventArgs> OnMediaLoaded;
         private Model model;
 
         public Model Model { get => model; set => model = value; }
-
-        public void Test()
+        public void LoadModel(string path)
         {
-
-            // You can set to -1 to disable logging messages
-            Vosk.Vosk.SetLogLevel(0);
-
-            Model = new Model("vosk-model-cn-0.1");
-            StartTask("test.wav");
-            //DemoFloats(model);
-            //DemoSpeaker(model);
+            if (!Directory.Exists(path)) return;
+            if (null != Model) Model.Dispose();
+            Model = new Model(path);
         }
+        public bool IsRunning { get; private set; }
+        public WaveFileReader WaveFile { get => waveFile; private set => waveFile = value; }
 
-        public void StartTask(string fullName)
+        private WaveFileReader waveFile;
+        private Stream source;
+        public void LoadAudio(string fileName)
         {
-            using Stream source = File.OpenRead(fullName);
-            using var wav = new WaveFileReader(source);
-
-            using var rec = new VoskRecognizer(Model, (float)wav.WaveFormat.SampleRate);
+            source = File.OpenRead(fileName);
+            if (WaveFile != null)
+            {
+                WaveFile.Dispose();
+            }
+            WaveFile = new WaveFileReader(source);
+            OnMediaLoaded?.Invoke(this, new VoskMediaLoadedEventArgs(WaveFile));
+        }
+        public Task StartTask(CancellationToken? token = null)
+        {
+            if (WaveFile == null) throw new ArgumentNullException(nameof(WaveFile));
+            if (IsRunning) return Task.CompletedTask;
+            IsRunning = true;
+            using var rec = new VoskRecognizer(Model, (float)WaveFile.WaveFormat.SampleRate);
             rec.SetMaxAlternatives(0);
             rec.SetWords(true);
             byte[] buffer = new byte[4096];
             int bytesRead;
-            while ((bytesRead = wav.Read(buffer, 0, buffer.Length)) > 0)
+            var cancelToken = token ?? CancellationToken.None;
+            var task = new Task(() =>
             {
-                if (rec.AcceptWaveform(buffer, bytesRead))
+                while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        IsRunning = false;
+                        return;
+                    }
+                    if (rec.AcceptWaveform(buffer, bytesRead))
+                    {
+                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.Result(), false));
+                    }
+                    else
+                    {
+                        OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
+                    }
                 }
-                else
-                {
-                    OnResult?.Invoke(this, new VoskResultEventArgs(rec.PartialResult(), true));
-                }
-            }
-            OnFinnalResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
+                OnFinnalResult?.Invoke(this, new VoskResultEventArgs(rec.FinalResult(), false));
+                IsRunning = false;
+            }, cancelToken);
+            task.Start();
+            return task;
         }
         public void DemoFloats(Model model)
         {
