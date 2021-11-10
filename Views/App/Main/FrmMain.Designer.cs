@@ -96,7 +96,7 @@ namespace Project.STT.SGT.Tool._2111
             this.panel1.Controls.Add(this.label1);
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1083, 191);
+            this.panel1.Size = new System.Drawing.Size(1083, 318);
             this.panel1.TabIndex = 1;
             // 
             // BtnModelSelect
@@ -128,10 +128,11 @@ namespace Project.STT.SGT.Tool._2111
             // 
             // TxtTemp
             // 
+            this.TxtTemp.AllowDrop = true;
             this.TxtTemp.Location = new System.Drawing.Point(13, 117);
             this.TxtTemp.Multiline = true;
             this.TxtTemp.Name = "TxtTemp";
-            this.TxtTemp.Size = new System.Drawing.Size(1046, 69);
+            this.TxtTemp.Size = new System.Drawing.Size(1046, 189);
             this.TxtTemp.TabIndex = 3;
             this.TxtTemp.Text = "点击开始说话...（暂不支持语音输入）";
             this.TxtTemp.Click += new System.EventHandler(this.TextTemp_Click);
@@ -185,9 +186,9 @@ namespace Project.STT.SGT.Tool._2111
             this.LstTranslateConfidence,
             this.LstTranslateResult});
             this.LstTranslate.HideSelection = false;
-            this.LstTranslate.Location = new System.Drawing.Point(0, 196);
+            this.LstTranslate.Location = new System.Drawing.Point(0, 312);
             this.LstTranslate.Name = "LstTranslate";
-            this.LstTranslate.Size = new System.Drawing.Size(1082, 827);
+            this.LstTranslate.Size = new System.Drawing.Size(1082, 711);
             this.LstTranslate.TabIndex = 2;
             this.LstTranslate.UseCompatibleStateImageBehavior = false;
             this.LstTranslate.View = System.Windows.Forms.View.Details;
