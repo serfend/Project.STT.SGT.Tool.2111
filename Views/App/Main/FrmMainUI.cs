@@ -17,12 +17,11 @@ namespace Project.STT.SGT.Tool._2111
     /// </summary>
     public partial class FrmMain
     {
-        private const string ConfigAppData = "app.default.";
         private void SyncUIContent()
         {
             config.Reload();
-            this.TxtMediaSrc.Text = config[$"{ConfigAppData}MediaSrc"];
-            this.TxtModelSelect.Text = config[$"{ConfigAppData}ModelSelect"];
+            this.TxtMediaSrc.Text = config.Data.History.MediaSrc;
+            this.TxtModelSelect.Text = config.Data.History.ModelSrc;
         }
         private void CheckCanStartTask()
         {
