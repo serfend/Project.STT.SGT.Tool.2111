@@ -120,6 +120,7 @@ namespace Project.STT.SGT.Tool._2111.Services.STT
                     }
                     var accepted = Rec.AcceptWaveform(buffer, bytesRead);
                     var e = new VoskResultEventArgs(Rec.PartialResult(), !accepted);
+                    accepted = accepted && e.Data.Partial.Length > 10;
                     if (accepted) OnFinnalResult?.Invoke(this, new VoskFinnalResultEventArgs(Rec.FinalResult(), false));
                     if (lastEvent == null || e.Data.Partial != lastEvent.Data.Partial)
                     {
