@@ -61,7 +61,7 @@ namespace Project.STT.SGT.Tool._2111
             this.FormClosing += (sender, e) => config.Save();
         }
 
-        private void BtnExportText_Click(object sender, EventArgs e)
+        private void BtnExportJsonText_Click(object sender, EventArgs e)
         {
             var title = (sender as Button).Text;
             DoExportResult(title, "json", () =>
@@ -70,7 +70,13 @@ namespace Project.STT.SGT.Tool._2111
                  foreach (var obj in this.LstTranslate.Items)
                  {
                      var item = obj as ListViewItem;
-                     list.Add(new VoskSingleWordResult() { });
+                     list.Add(new VoskSingleWordResult()
+                     {
+                         Confidence = double.Parse(item.SubItems[2].Text),
+                         Content = item.SubItems[4].Text,
+                         Start = double.Parse(item.SubItems[0].Text),
+                         End = double.Parse(item.SubItems[1].Text),
+                     });
                  }
                  var result = new { Meida = v.MediaMeta, Result = list, Export = new { Time = DateTime.Now } };
                  return JsonSerializer.Serialize(result);
@@ -79,11 +85,12 @@ namespace Project.STT.SGT.Tool._2111
         private void DoExportResult(string title, string extension, Func<string> ResultGetter)
         {
             logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"开始{title}");
-            var dialog = new SaveFileDialog() { 
-                Title = title, 
-                RestoreDirectory = true, 
-                DefaultExt = extension, 
-                Filter = $"{extension}文件|*.{extension}" ,
+            var dialog = new SaveFileDialog()
+            {
+                Title = title,
+                RestoreDirectory = true,
+                DefaultExt = extension,
+                Filter = $"{extension}文件|*.{extension}",
                 FileName = $"[{Path.GetFileName(TxtMediaSrc.Text)}].[${Path.GetFileName(TxtModelSelect.Text)}]output.{extension}"
             };
             var result = dialog.ShowDialog(this);
@@ -93,18 +100,18 @@ namespace Project.STT.SGT.Tool._2111
             logger.ActionWithLabel((l, m) => l.Log<string>(LogLevel.Info, m), $"完成{title}");
         }
 
-        private void BtnExportText_Click_1(object sender, EventArgs e)
+        private void BtnExportPlainText_Click(object sender, EventArgs e)
         {
             var title = (sender as Button).Text;
             DoExportResult(title, "txt", () =>
              {
-                 var content = new StringBuilder();
+                 var content = new List<string>();
                  foreach (var obj in this.LstTranslate.Items)
                  {
                      var item = obj as ListViewItem;
-                     content.AppendLine(item.SubItems[4].Text);
+                     content.Insert(0, item.SubItems[4].Text);
                  }
-                 return content.ToString();
+                 return string.Join('\n', content);
              });
         }
     }
